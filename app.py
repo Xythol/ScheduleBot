@@ -2,6 +2,7 @@ from telegram.ext import CommandHandler, MessageHandler, Updater, Filters, Callb
 import telegram
 import logging
 import scheduler
+import os
 
 def start(update, context):
     context.bot.send_message(chat_id=update.effective_chat.id, text="Hello sir!")
@@ -11,8 +12,12 @@ def main():
     # PORT = os.environ.get('PORT')
     # PLATFORM = os.environ.get('PLATFORM')
     
+    # Environment vars
+    TELEGRAM_KEY = os.getenv("TELEGRAM_KEY")
+    PLATFORM = os.getenv("PLATFORM")
+    PORT = os.getenv("PORT")
 
-    updater = Updater(token="1243664691:AAGFTVXeIXBwOloBdyVVpqmBpuusKBpnJvo", use_context=True)
+    updater = Updater(token=TELEGRAM_KEY, use_context=True)
     dispatcher = updater.dispatcher
     # job = updater.job_queue
 
@@ -34,13 +39,13 @@ def main():
 
 
     # If on heroku, run webhook
-    # if PLATFORM == 'HEROKU':
-    #     updater.start_webhook(listen="0.0.0.0",
-    #                     port=PORT,
-    #                     url_path=TOKEN)
-    #     updater.bot.set_webhook("https://tools-bot.herokuapp.com/" + TOKEN)
-    # else:
-    updater.start_polling()
+    if PLATFORM == 'HEROKU':
+        updater.start_webhook(listen="0.0.0.0",
+                        port=PORT,
+                        url_path=TELEGRAM_KEY)
+        updater.bot.set_webhook("https://schedulerbotz.herokuapp.com//" + TELEGRAM_KEY)
+    else:
+        updater.start_polling()
 
     updater.idle()
 

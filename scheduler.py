@@ -182,7 +182,7 @@ class ReviewReminders:
 
 
     def get_review_handler(self):
-        return CommandHandler("allreminder", self.showallreminders)
+        return CommandHandler("allreminders", self.showallreminders)
 
     def reminder_button(self, update, context):
         # if is delete button

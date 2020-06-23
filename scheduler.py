@@ -25,40 +25,40 @@ class SchedulerConvo:
     def start(self, update, context):
         reply_message = "Please enter a description for the schedule."
 
-        update.message.reply_text(reply_message)
+        context.bot.send_message(update.effective_chat.id, reply_message)
 
         return self.DESCRIPTION
 
     def cancel(self, update, context):
-        update.message.reply_text("You have exited out of the dialog.")
+        context.bot.send_message(update.effective_chat.id, "You have exited out of the dialog.")
 
         return ConversationHandler.END
 
     def description(self, update, context):
         # Handles convo cancellation
         if update.message.text == "/cancel":
-            update.message.reply_text("You have stopped scheduling for a reminder.")
+            context.bot.send_message(update.effective_chat.id, "You have stopped scheduling for a reminder.")
             return ConversationHandler.END
         
         self.description_val = update.message.text
 
         reply_message = "Please enter the date(ddmmyyyy) of reminder."
 
-        update.message.reply_text(reply_message)
+        context.bot.send_message(update.effective_chat.id, reply_message)
 
         return self.DATE
 
     def date(self, update, context):
         # Handles convo cancellation
         if update.message.text == "/cancel":
-            update.message.reply_text("You have stopped scheduling for a reminder.")
+            context.bot.send_message(update.effective_chat.id, "You have stopped scheduling for a reminder.")
             return ConversationHandler.END
 
         # check if there are 8 numbers in the str
         message_date = update.message.text
 
         if len(message_date) != 8 or message_date.isdigit() == False:
-            update.message.reply_text("Please check that you have entered 8 numbers.")
+            context.bot.send_message(update.effective_chat.id, "Please check that you have entered 8 numbers.")
 
             return self.DATE
 
@@ -71,7 +71,7 @@ class SchedulerConvo:
         input_date = datetime(int(year), int(month), int(day)).date()
 
         if current_date > input_date:
-            update.message.reply_text("You have entered a date before today. Please re-enter the date(ddmmyyyy).")
+            context.bot.send_message(update.effective_chat.id, "You have entered a date before today. Please re-enter the date(ddmmyyyy).")
 
             return self.DATE
 
@@ -83,21 +83,21 @@ class SchedulerConvo:
         # store the date in memory to be written into db
         self.date_val = message_date
 
-        update.message.reply_text("Please enter the time(24 hours E.g 0100) that you would like to have the reminder.")
+        context.bot.send_message(update.effective_chat.id, "Please enter the time(24 hours E.g 0100) that you would like to have the reminder.")
 
         return self.TIME
 
     def time(self, update, context):
         # Handles convo cancellation
         if update.message.text == "/cancel":
-            update.message.reply_text("You have stopped scheduling for a reminder.")
+            context.bot.send_message(update.effective_chat.id, "You have stopped scheduling for a reminder.")
             return ConversationHandler.END
 
         # check if there are 8 numbers in the str
         message_time = update.message.text
 
         if len(message_time) != 4 or message_time.isdigit() == False:
-            update.message.reply_text("Please check that you have entered 4 numbers.")
+            context.bot.send_message(update.effective_chat.id, "Please check that you have entered 4 numbers.")
 
             return self.TIME
 
@@ -109,7 +109,7 @@ class SchedulerConvo:
         input_date = datetime(int(self.year_val), int(self.month_val), int(self.day_val), int(hour), int(minute))
 
         if current_date > input_date:
-            update.message.reply_text("You have entered a time in the past. Please re-enter the time(24 hours).")
+            context.bot.send_message(update.effective_chat.id, "You have entered a time in the past. Please re-enter the time(24 hours).")
 
             return self.TIME
 
@@ -121,7 +121,7 @@ class SchedulerConvo:
         self.time_val = message_time
 
         reply_message = "Description: {0}\nDate(Day/Month/Year): {1}/{2}/{3}\nTime(hh:mm): {4}:{5}".format(self.description_val, self.day_val, self.month_val, self.year_val, self.hour_val, self.minute_val)
-        update.message.reply_text(reply_message)
+        context.bot.send_message(update.effective_chat.id, reply_message)
 
         # Init mongodb connection
         db = MongoDB('heroku_mqncqpgt', 'reminders')
@@ -171,14 +171,14 @@ class ReviewReminders:
             hour = element["time"][0:2]
             minute = element["time"][2:4]
 
-            id = str(element["_id"])
+            #id = str(element["_id"])
 
             messagestr = "Description: {0}\nDate(Day/Month/Year): {1}/{2}/{3}\nTime(hh:mm): {4}:{5}\noid: {6}".format(element["description"], day, month, year, hour, minute, str(element["_id"]))
 
             # Add inlinebutton
             keyboard = [[InlineKeyboardButton("Delete from database", callback_data='delete')]]
 
-            update.message.reply_text(messagestr, reply_markup = InlineKeyboardMarkup(keyboard))
+            context.bot.send_message(update.effective_chat.id, messagestr, reply_markup = InlineKeyboardMarkup(keyboard))
 
 
     def get_review_handler(self):

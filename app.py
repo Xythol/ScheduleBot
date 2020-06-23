@@ -3,6 +3,7 @@ import telegram
 import logging
 import scheduler
 import os
+import schedulecheck
 
 def start(update, context):
     context.bot.send_message(chat_id=update.effective_chat.id, text="Hello sir!")
@@ -48,6 +49,9 @@ def main():
         updater.start_polling()
 
     updater.idle()
+
+    # Init schedulecheck
+    schedulecheck.schedulecheck.updater = updater
 
 if __name__ == '__main__':
     main()

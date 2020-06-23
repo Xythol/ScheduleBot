@@ -1,6 +1,7 @@
 from mongodb import MongoDB
 from datetime import datetime
 import os
+from bson.objectid import ObjectId
 
 from telegram.ext import (Updater, CommandHandler, MessageHandler, Filters,
                           ConversationHandler, CallbackQueryHandler)
@@ -22,22 +23,38 @@ class schedulecheck:
         current_date = datetime.now().date().strftime('%d%m%Y')
         query = { "date" : current_date }
 
+        # Get current time
+        current_time = datetime.now().strftime("%H%M")
+
+        # Loop through all reminders today to check for the time
         for element in db.finddb(query):
 
                 # separate the date str
-                day = element["date"][0:2]
-                month = element["date"][2:4]
-                year = element["date"][4:8]
+                # day = element["date"][0:2]
+                # month = element["date"][2:4]
+                # year = element["date"][4:8]
 
                 # separate the time str
-                hour = element["time"][0:2]
-                minute = element["time"][2:4]
+                hour = int(element["time"][0:2])
+                minute = int(element["time"][2:4])
 
-                chatid = element["chatid"]
+                # Convert hour and minute into datetime
+                remindertime = datetime.now().replace(hour=hour, minute=minute).strftime("%H%M")
 
-                messagestr = "Description: {0}\nDate(Day/Month/Year): {1}/{2}/{3}\nTime(hh:mm): {4}:{5}\noid: {6}".format(element["description"], day, month, year, hour, minute, str(element["_id"]))
+                # If remindertime is less than current timing, send out timing and delete the reminder from DB
+                if remindertime <= current_time:
+                    chatid = element["chatid"]
 
-                schedulecheck.updater.bot.send_message(chatid, messagestr)
+                    messagestr = "Reminder: {0}".format(element["description"])
+
+                    schedulecheck.updater.bot.send_message(chatid, messagestr)
+
+                    # Convert object id str into ObjectID
+                    objectid = ObjectId(str(element["_id"]))
+
+                    # Delete from db
+                    query = { "_id" : objectid }
+                    db.deleteonedb(query)
 
 
 
